@@ -30,23 +30,41 @@ namespace fs = std::filesystem;
 //   * comb feedback   g = 0.40 + 0.58*(1 - Damping/100)   -> [0.40, 0.98]
 //   * delay scale     0.968 * sqrt(Size/0.625)  (ER/AP/comb all scale)
 //   * wet level       scaled by sqrt(1-g), so low damping = quiet, long tail
-//   * RT60 ≈ 0.0203 * sqrt(Size/0.625) / (-ln g)   seconds (broadband estimate)
+//   * RT60 ≈ 0.0197 * sqrt(Size/0.625) / (-ln g)   seconds
+//     (broadband average-comb estimate; the longest comb stretches the very
+//      end of the tail by roughly 10-20%)
 // The damping values therefore sit lower than RE-04's perceptual-curve
 // presets for comparable decay times.
+//
+// Listed in ascending RT60 order; the trailing comment gives the estimated
+// decay and the intended production scenario.
 static const Preset kFactoryPresets[] = {
     //  name             size   damp  predelay hiDamp loCut  ER    mix  lvl
-    {"Slap Room",        0.625f, 60,   0,      25,   160,  -6.0f, 22, 0.0f}, // RT60 ~0.04 s
-    {"Drum Room",        2.5f,   40,   3,      30,   150,  -3.0f, 30, 0.0f}, // RT60 ~0.14 s
-    {"Small Room",      10.0f,   42,   8,      35,   110,  -5.0f, 32, 0.0f}, // RT60 ~0.27 s
-    {"Studio Chamber",  40.0f,   40,  15,      55,    90,  -6.0f, 36, 0.0f}, // RT60 ~0.56 s
-    {"Warm Chamber",    80.0f,   45,  20,      75,    70,  -8.0f, 38, 0.0f}, // RT60 ~0.70 s, dark
-    {"Vocal Space",     40.0f,   48,  25,      60,   100,  -5.0f, 34, 0.0f}, // RT60 ~0.47 s
-    {"Dark Ambience",  200.0f,   35,  12,      85,    55,  -8.0f, 35, 0.0f}, // RT60 ~1.4 s
-    {"Plate",          160.0f,   18,   0,      45,   140, -10.0f, 40, 0.0f}, // RT60 ~2.5 s
-    {"Grand Hall",     640.0f,   30,  40,      45,    80,  -9.0f, 42, 0.0f}, // RT60 ~3.0 s
-    {"Cathedral",      500.0f,   14,  75,      30,    45, -12.0f, 45, 0.0f}, // RT60 ~5.4 s
-    {"Bloom Pad",      640.0f,    8,  50,      70,    40, -12.0f, 45, 0.0f}, // RT60 ~9.5 s
-    {"Endless Hall",   640.0f,    2,  60,      40,    60, -14.0f, 50, 0.0f}, // RT60 ~20 s
+    {"Slap Room",        0.625f, 60,   0,      25,   160,  -6.0f, 22, 0.0f}, // ~0.04 s - tight percussion slap
+    {"Announce Booth",   2.5f,   55,   0,      75,   130, -14.0f, 14, 0.0f}, // ~0.10 s - dry voice-over / podcast booth
+    {"Tiled Bathroom",   1.25f,  35,   0,      15,   170,  -1.0f, 38, 0.0f}, // ~0.11 s - bright micro space, foley
+    {"Bass Cab Room",    5.0f,   60,   4,      70,    55,  -8.0f, 24, 0.0f}, // ~0.12 s - dark bass ambience
+    {"Drum Room",        2.5f,   40,   3,      30,   150,  -3.0f, 30, 0.0f}, // ~0.14 s - punchy drums
+    {"Drum Bus Room",   10.0f,   48,   6,      45,   110,  -4.0f, 48, 0.0f}, // ~0.22 s - parallel drum-bus glue
+    {"Small Room",      10.0f,   42,   8,      35,   110,  -5.0f, 32, 0.0f}, // ~0.26 s - general small room
+    {"Snare Splash",     5.0f,   30,   2,      20,   160,  -2.0f, 42, 0.0f}, // ~0.26 s - bright parallel snare verb
+    {"Clean Guitar",    20.0f,   45,  12,      50,    90,  -6.0f, 30, 0.0f}, // ~0.34 s - natural guitar room
+    {"Lo-Fi Space",     40.0f,   55,   8,      95,    30, -16.0f, 40, 0.0f}, // ~0.38 s - dark vintage wash
+    {"Vocal Space",     40.0f,   48,  25,      60,   100,  -5.0f, 34, 0.0f}, // ~0.45 s - lead vocal reverb
+    {"Studio Chamber",  40.0f,   40,  15,      55,    90,  -6.0f, 36, 0.0f}, // ~0.54 s - neutral studio chamber
+    {"Warm Chamber",    80.0f,   45,  20,      75,    70,  -8.0f, 38, 0.0f}, // ~0.68 s - dark warm chamber
+    {"Vocal Throw",     80.0f,   40, 120,      35,   120, -10.0f, 45, 0.0f}, // ~0.77 s - delay throws, big pre-delay
+    {"Dark Ambience",  200.0f,   35,  12,      85,    55,  -8.0f, 35, 0.0f}, // ~1.4 s - dark underscore wash
+    {"Piano Hall",     160.0f,   25,  25,      40,    70,  -8.0f, 32, 0.0f}, // ~1.75 s - acoustic piano
+    {"Concert Stage",  320.0f,   32,  18,      55,    75,  -5.0f, 34, 0.0f}, // ~1.9 s - live ensemble stage
+    {"Plate",          160.0f,   18,   0,      45,   140, -10.0f, 40, 0.0f}, // ~2.4 s - classic plate
+    {"Grand Hall",     640.0f,   30,  40,      45,    80,  -9.0f, 42, 0.0f}, // ~2.9 s - orchestral hall
+    {"String Hall",    320.0f,   18,  35,      65,    50, -12.0f, 38, 0.0f}, // ~3.4 s - smooth strings
+    {"Dub Chamber",    640.0f,   20,  90,      80,    45, -14.0f, 50, 0.0f}, // ~4.3 s - dub / electronic echoes
+    {"Cathedral",      500.0f,   14,  75,      30,    45, -12.0f, 45, 0.0f}, // ~5.2 s - huge sacred space
+    {"Bloom Pad",      640.0f,    8,  50,      70,    40, -12.0f, 45, 0.0f}, // ~9.2 s - evolving pads
+    {"Ambient Swells", 640.0f,    6, 100,      85,    40, -40.0f, 55, 0.0f}, // ~11 s - guitar swells / FX, ER off
+    {"Endless Hall",   640.0f,    2,  60,      40,    60, -14.0f, 50, 0.0f}, // ~20 s - freeze-like drone tail
 };
 static constexpr int kFactoryPresetsCount = (int)(sizeof(kFactoryPresets) / sizeof(kFactoryPresets[0]));
 
@@ -405,7 +423,7 @@ void PresetManager::restoreFromState(const std::string& typeStr,
 
     // Restore index by searching for the name in the appropriate list.
     // Factory fallback is -1 ("Default") — not index 0 — so that an empty
-    // preset_name on first launch resolves to Default, not "Grand Hall" (the first factory preset).
+    // preset_name on first launch resolves to Default, not the first factory preset.
     fCurrentIndex = -1;
     if (fCurrentType == PresetType::Factory) {
         for (int i = 0; i < kFactoryPresetsCount; ++i) {
