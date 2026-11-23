@@ -57,6 +57,7 @@ dpf_add_plugin(${PROJECT_NAME}
         src/UISubroutines.cpp
         src/PresetManager.cpp
         src/subwindows/PresetManagerWindow.cpp
+        src/subwindows/AboutWindow.cpp
         src/subwindows/FileBrowserStuff.cpp
         src/subwindows/MessageBoxStuff.cpp
         widgets/dpf-imgui/DearImGui.cpp

@@ -87,6 +87,8 @@ private:
     void _drawPresetManager(); // Draw the preset manager overlay window (implemented in PresetManagerUI.cpp)
     void _applyRestoredPresetState(); // Restore preset context from buffered stateChanged() values
 
+    void _drawAboutWindow(); // Draw the About window (implemented in AboutWindow.cpp)
+
     // -------------------------------------------------------------------
     // Instances
 
